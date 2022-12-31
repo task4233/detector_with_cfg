@@ -35,11 +35,15 @@ class Covnerter():
         """
         make one-hot vector from universal set of all apis in given APKs.
         """
-        self.api_usages = []
-        self.api_frequencies = []
+        all_apis = list(self.all_apis.keys())
+        all_apis.append('family')
+
+        self.api_usages = [all_apis]
+        self.api_frequencies = [all_apis]
         for api_freq in self.api_freqs:
             # 各APKのAPI_USAGE listを作る
             family = 0
+            
             api_usage = [0] * len(self.all_apis)
             api_frequency = [0] * len(self.all_apis)
             for api_name, occurrences in api_freq.items():
