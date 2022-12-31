@@ -8,14 +8,18 @@ class Classifier:
     def __init__(self) -> None:
         self.all_apis_path = 'cfg_builder/output/allApis.json'
         self.api_freqs_path = 'cfg_builder/output/apiFrequencies.json'
+        self.api_seqs_path =  'cfg_builder/output/apiSequences.json'
         self.api_usages_path = 'output/api_usages.json'
         self.api_frequencies_path = 'output/api_frequencies.json'
+        self.api_sequences_path =  'output/api_sequences.json'
 
         self.api_usages, self.api_freqs = converter.Covnerter(
             self.all_apis_path,
             self.api_freqs_path,
+            self.api_seqs_path,
             self.api_usages_path,
             self.api_frequencies_path,
+            self.api_sequences_path
         ).convert()
 
     def classify(self):
@@ -24,6 +28,7 @@ class Classifier:
     
     def __classify(self, name: str, data: list):
         df = pd.DataFrame(data[1:], columns=data[0])
+        print(df[:5])
 
         # 説明変数と目的変数に分ける
         # 説明変数: (API Usage, API Frequency, API Sequence)
