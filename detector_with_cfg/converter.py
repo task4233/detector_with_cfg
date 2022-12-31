@@ -15,6 +15,8 @@ class Covnerter():
         self.api_freqs_path = api_freqs_path
         self.api_usages_path = api_usages_path
         self.api_frequencies_path = api_frequencies_path
+
+        self.__family_key = "a05cba79-d480-44ad-8a41-1447d544d1b"
         pass
 
     def convert(
@@ -37,13 +39,24 @@ class Covnerter():
         self.api_frequencies = []
         for api_freq in self.api_freqs:
             # 各APKのAPI_USAGE listを作る
+            family = 0
             api_usage = [0] * len(self.all_apis)
             api_frequency = [0] * len(self.all_apis)
             for api_name, occurrences in api_freq.items():
+                if api_name == self.__family_key:
+                    family = occurrences
+                    continue
+
                 # api_usage_idx
                 api_usage_idx = self.all_apis[api_name]
                 api_usage[api_usage_idx] = 1
                 api_frequency[api_usage_idx] = occurrences
+            
+            # 末尾に目的変数を付与
+            api_usage.append(family)
+            api_frequency.append(family)
+
+            # 全体にappend
             self.api_usages.append(api_usage)
             self.api_frequencies.append(api_frequency)
 
