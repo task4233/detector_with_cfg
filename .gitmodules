@@ -1,0 +1,3 @@
+[submodule "cfg_builder"]
+	path = cfg_builder
+	url = git@github.com:task4233/cfg_builder.git

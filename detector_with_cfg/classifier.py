@@ -4,14 +4,15 @@ from detector_with_cfg import converter
 
 import pandas as pd
 
+
 class Classifier:
     def __init__(self) -> None:
         self.all_apis_path = 'cfg_builder/output/allApis.json'
         self.api_freqs_path = 'cfg_builder/output/apiFrequencies.json'
-        self.api_seqs_path =  'cfg_builder/output/apiSequences.json'
+        self.api_seqs_path = 'cfg_builder/output/apiSequences.json'
         self.api_usages_path = 'output/api_usages.json'
         self.api_frequencies_path = 'output/api_frequencies.json'
-        self.api_sequences_path =  'output/api_sequences.json'
+        self.api_sequences_path = 'output/api_sequences.json'
 
         self.api_usages, self.api_freqs = converter.Covnerter(
             self.all_apis_path,
@@ -23,10 +24,13 @@ class Classifier:
         ).convert()
 
     def classify(self):
+        print("start classify")
         self.__classify("API Usage", self.api_usages)
         self.__classify("API Frequency", self.api_freqs)
-    
+        print("done classify")
+
     def __classify(self, name: str, data: list):
+        print(f"start __classify for {name}")
         df = pd.DataFrame(data[1:], columns=data[0])
         print(df[:5])
 
@@ -37,8 +41,9 @@ class Classifier:
         df_y = df[data[0][-1]]
 
         # 学習とテスト用データセットに分割する
-        train_x, test_x, train_y, test_y = train_test_split(df_x, df_y, random_state=1)
-        
+        train_x, test_x, train_y, test_y = train_test_split(
+            df_x, df_y, random_state=1)
+
         # 決定木モデルの作成
         model = tree.DecisionTreeClassifier(max_depth=2, random_state=1)
         model.fit(train_x, train_y)

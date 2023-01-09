@@ -81,7 +81,10 @@ class Covnerter():
         max_idx = 0
         for file in files:
             with open(file, 'r') as f:
+                print(f"loading {f.name}")
                 dd = json.load(f)
+            if dd.values() is None or len(dd.values()) == 0:
+                continue
             for v in dd.values():
                 v += max_idx
             max_idx = max(dd.values())
@@ -111,7 +114,8 @@ class Covnerter():
                 dd_list = json.load(f)
             ddd_list = []
             for api_seqs_with_api_name in dd_list:
-                ddd_list += [self.all_apis[api_name] for api_name in api_seqs_with_api_name if api_name != "0" and api_name != "1"]
+                ddd_list += [self.all_apis[api_name]
+                             for api_name in api_seqs_with_api_name if api_name != "0" and api_name != "1"]
             self.api_seqs += ddd_list
         print("done load_json for all_sequence")
 
