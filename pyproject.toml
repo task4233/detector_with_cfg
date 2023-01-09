@@ -8,7 +8,11 @@ authors = ["task4233 <29667656+task4233@users.noreply.github.com>"]
 python = "3.10.6"
 pandas = "1.5.2"
 scikit-learn = "1.2.0"
-autopep8 = "^2.0.1"
+autopep8 = "2.0.1"
+lightgbm = "^3.3.4"
+graphviz = "^0.20.1"
+matplotlib = "^3.6.2"
+catboost = "^1.1.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "5.2"

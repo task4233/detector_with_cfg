@@ -111,6 +111,7 @@ class Covnerter():
         self.api_seqs = []
         for file in files:
             with open(file, 'r') as f:
+                print(f"loading {f.name}...")
                 dd_list = json.load(f)
             ddd_list = []
             for api_seqs_with_api_name in dd_list:
