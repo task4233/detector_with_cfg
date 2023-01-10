@@ -81,11 +81,12 @@ class Classifier:
         plot_tree(model, feature_names=train_x.columns, class_names=True, filled=True)
         plt.savefig(f"{name}_{self.depth}.pdf")
 
-        self.drawing_confusion_matrix(test_y, pred_y, name)
-        self.calculation_evaluations(test_y, pred_y)
+        self.__drawing_confusion_matrix(test_y, pred_y, name)
+        self.__calculation_evaluations(test_y, pred_y)
 
 
-    def drawing_confusion_matrix(self, y: pd.Series, pre: np.ndarray, name: str) -> None: 
+    # ref: https://qiita.com/satoichi/items/88e9034a01c206a478ea
+    def __drawing_confusion_matrix(self, y: pd.Series, pre: np.ndarray, name: str) -> None: 
         confmat = confusion_matrix(y, pre)
         fig, ax = plt.subplots(figsize=(5, 5))
         ax.matshow(confmat, cmap=plt.cm.Blues, alpha=0.3)
@@ -98,7 +99,7 @@ class Classifier:
         plt.tight_layout() 
         plt.savefig(f"{name}_confusion_matrix_{self.depth}.pdf")
 
-    def calculation_evaluations(self, y: pd.Series, pre: np.ndarray) -> None:
+    def __calculation_evaluations(self, y: pd.Series, pre: np.ndarray) -> None:
         print('Acc: {:.3f}'.format(metrics.accuracy_score(y, pre)))
         print('Pre: {:.3f}'.format(metrics.precision_score(y, pre)))
         print('Rec: {:.3f}'.format(metrics.recall_score(y, pre)))
