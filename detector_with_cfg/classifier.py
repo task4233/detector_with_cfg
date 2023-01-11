@@ -12,6 +12,7 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn import metrics
+from art.estimators.classification import KerasClassifier
 
 import copy
 
@@ -40,21 +41,26 @@ class Classifier:
         #     self.api_sequences_path
         # ).convert()
 
-        with open(self.api_usages_path, 'r') as f:
-            self.api_usages = json.load(f)
+        # with open(self.api_usages_path, 'r') as f:
+        #     self.api_usages = json.load(f)
 
-        with open(self.api_frequencies_path, 'r') as f:
-            self.api_freqs = json.load(f)
+        # with open(self.api_frequencies_path, 'r') as f:
+        #     self.api_freqs = json.load(f)
+        
+        with open(self.api_sequences_path, 'r') as f:
+            self.api_seqs = json.load(f)
 
     def classify(self):
         print("start classify")
-        # classify with API Usage
-        self.__classify("API Usage", self.api_usages)
-        self.__classify_with_gea("API Usage", self.api_usages)
+        # # classify with API Usage
+        # self.__classify("API Usage", self.api_usages)
+        # self.__classify_with_gea("API Usage", self.api_usages)
 
-        # classify with API Frequency
-        self.__classify("API Frequency", self.api_freqs)
-        self.__classify_with_gea("API Frequency", self.api_freqs)
+        # # classify with API Frequency
+        # self.__classify("API Frequency", self.api_freqs)
+        # self.__classify_with_gea("API Frequency", self.api_freqs)
+
+        self.__classify_with_LSTM("API Sequences", self.api_seqs)
         print("done classify")
 
     def __classify(self, name: str, data: list):
@@ -215,6 +221,7 @@ class Classifier:
 
         self.__drawing_confusion_matrix(df_gea_y, pred_y, name)
         self.__calculation_evaluations(df_gea_y, pred_y)
+    
 
     # ref: https://qiita.com/satoichi/items/88e9034a01c206a478ea
     def __drawing_confusion_matrix(self, y: pd.Series, pre: np.ndarray, name: str) -> None:
