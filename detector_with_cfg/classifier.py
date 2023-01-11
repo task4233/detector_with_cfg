@@ -4,7 +4,6 @@ from sklearn.tree import plot_tree
 from detector_with_cfg import converter, gea
 from sklearn.tree import plot_tree
 import re
-import traceback
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -66,13 +65,13 @@ class Classifier:
                 cell = re.sub('[^A-Za-z0-9_]+', '_', str(cell))
 
         df = pd.DataFrame(data[1:], columns=data[0])
-        df = df.replace([None, 'Nan', 'None', ''], 0)
+        df = df.replace([None, 'Nan', 'None', 'unknown' ''], 0)
 
         # 説明変数と目的変数に分ける
         # 説明変数: (API Usage, API Frequency, API Sequence)
         # 目的変数: (benign/malicious)
         df_x = df.iloc[:, :-1]
-        df_y = df.iloc[:, -1]
+        df_y = df.iloc[:, -1].astype('int')
         print(f"df: {df.shape}, df_x: {df_x.shape}, df_y: {df_y.shape}")
 
         # 学習とテスト用データセットに分割する
@@ -97,6 +96,11 @@ class Classifier:
 
         self.__drawing_confusion_matrix(test_y, pred_y, name)
         self.__calculation_evaluations(test_y, pred_y)
+
+        min_value = 0
+        max_value = 1
+
+        classifier = KerasClassifier(model=model, clip_values=(min_value, max_value), use_logits=False)
 
         # check with gea
         # geaデータの用意
@@ -113,12 +117,15 @@ class Classifier:
                 print(f"invalid name: {name}")
                 assert False
             geas.append(gg)
+        for column in geas:
+            for cell in column:
+                cell = re.sub('[^A-Za-z0-9_]+', '_', str(cell))
 
         df_gea = pd.DataFrame(geas, columns=data[0])
-        df_gea = df_gea.replace([None, 'Nan', 'None', ''], 0)
+        df_gea = df_gea.replace([None, 'Nan', 'None', '', 'unknown'], 0)
         print(f"df_gea: {df_gea.shape}")
         df_gea_x = df_gea.iloc[:, :-1]
-        df_gea_y = df_gea.iloc[:, -1]
+        df_gea_y = df_gea.iloc[:, -1].astype('int')
 
         # 予測
         pred_y = model.predict(df_gea_x)
@@ -135,10 +142,6 @@ class Classifier:
     def __classify_with_gea(self, name: str, data: list, model=None):
         print(f"start __classify_with_gea for {name}")
 
-        for column in data:
-            for cell in column:
-                cell = re.sub('[^A-Za-z0-9_]+', '_', str(cell))
-
         # check with gea
         geas = []
         changed_num = int(len(data) * 0.7)-1  # -1 is for column names
@@ -154,19 +157,23 @@ class Classifier:
                 assert False
             geas.append(gg)
 
+        rest_num = len(data) - (changed_num+1)
         # column_names(index: 0) + data
-        new_data = geas + data[changed_num:]
-        try:
-            df = pd.DataFrame(new_data, columns=data[0])
-            df = df.replace([None, 'Nan', 'None', ''], 0)
-        except Exception as e:
-            traceback.print_exc()
+        new_data = data[1:rest_num] + geas
+
+        for column in new_data:
+            for cell in column:
+                cell = re.sub('[^A-Za-z0-9_]+', '_', str(cell))
+
+        df = pd.DataFrame(new_data, columns=data[0])
+        df = df.replace([None, 'Nan', 'None', '', 'unknown'], 0)
 
         # 説明変数と目的変数に分ける
         # 説明変数: (API Usage, API Frequency, API Sequence)
         # 目的変数: (benign/malicious)
         df_x = df.iloc[:, :-1]
-        df_y = df.iloc[:, -1]
+        df_y = df.iloc[:, -1].astype('int')
+        print(df_y.unique())
         print(f"df: {df.shape}, df_x: {df_x.shape}, df_y: {df_y.shape}")
 
         # 学習とテスト用データセットに分割する
@@ -187,16 +194,16 @@ class Classifier:
         plt.figure(figsize=(100, 100))
         plot_tree(model, feature_names=train_x.columns,
                   class_names=True, filled=True)
-        plt.savefig(f"{name}_{self.depth}.pdf")
+        plt.savefig(f"{name}_{self.depth}_after.pdf")
 
         self.__drawing_confusion_matrix(test_y, pred_y, name)
         self.__calculation_evaluations(test_y, pred_y)
 
         df_gea = pd.DataFrame(geas, columns=data[0])
-        df_gea = df_gea.replace([None, 'Nan', 'None', ''], 0)
+        df_gea = df_gea.replace([None, 'Nan', 'None', '', 'unknown'], 0)
         print(f"df_gea: {df_gea.shape}")
         df_gea_x = df_gea.iloc[:, :-1]
-        df_gea_y = df_gea.iloc[:, -1]
+        df_gea_y = df_gea.iloc[:, -1].astype('int')
 
         # 予測
         pred_y = model.predict(df_gea_x)
@@ -204,7 +211,7 @@ class Classifier:
         plt.figure(figsize=(15, 10))
         plot_tree(model, feature_names=df_gea.columns,
                   class_names=True, filled=True)
-        plt.savefig(f"{name}_gea_{self.depth}.pdf")
+        plt.savefig(f"{name}_gea_{self.depth}_after.pdf")
 
         self.__drawing_confusion_matrix(df_gea_y, pred_y, name)
         self.__calculation_evaluations(df_gea_y, pred_y)
