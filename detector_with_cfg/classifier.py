@@ -10,9 +10,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
 from sklearn import metrics
-from art.estimators.classification import KerasClassifier
+from sklearn.model_selection import KFold
 
 import copy
 
@@ -41,26 +40,26 @@ class Classifier:
         #     self.api_sequences_path
         # ).convert()
 
-        # with open(self.api_usages_path, 'r') as f:
-        #     self.api_usages = json.load(f)
+        with open(self.api_usages_path, 'r') as f:
+            self.api_usages = json.load(f)
 
-        # with open(self.api_frequencies_path, 'r') as f:
-        #     self.api_freqs = json.load(f)
+        with open(self.api_frequencies_path, 'r') as f:
+            self.api_freqs = json.load(f)
         
-        with open(self.api_sequences_path, 'r') as f:
-            self.api_seqs = json.load(f)
+        # with open(self.api_sequences_path, 'r') as f:
+        #     self.api_seqs = json.load(f)
 
     def classify(self):
         print("start classify")
         # # classify with API Usage
-        # self.__classify("API Usage", self.api_usages)
-        # self.__classify_with_gea("API Usage", self.api_usages)
+        self.__classify("API Usage", self.api_usages)
+        self.__classify_with_gea("API Usage", self.api_usages)
 
         # # classify with API Frequency
-        # self.__classify("API Frequency", self.api_freqs)
-        # self.__classify_with_gea("API Frequency", self.api_freqs)
+        self.__classify("API Frequency", self.api_freqs)
+        self.__classify_with_gea("API Frequency", self.api_freqs)
 
-        self.__classify_with_LSTM("API Sequences", self.api_seqs)
+        # self.__classify_with_LSTM("API Sequences", self.api_seqs)
         print("done classify")
 
     def __classify(self, name: str, data: list):
@@ -80,13 +79,13 @@ class Classifier:
         df_y = df.iloc[:, -1].astype('int')
         print(f"df: {df.shape}, df_x: {df_x.shape}, df_y: {df_y.shape}")
 
-        # 学習とテスト用データセットに分割する
+        # 学習とテスト用データセットに分割する(8:2)
         train_x, test_x, train_y, test_y = train_test_split(
-            df_x, df_y, random_state=1)
+            df_x, df_y, random_state=42, test_size=0.2)
 
         # 決定木モデルの作成
         model = tree.DecisionTreeClassifier(
-            max_depth=self.depth, random_state=1)
+            max_depth=self.depth, random_state=42)
         # model = lightgbm.LGBMRegressor()
         model.fit(train_x, train_y)
 
@@ -103,10 +102,7 @@ class Classifier:
         self.__drawing_confusion_matrix(test_y, pred_y, name)
         self.__calculation_evaluations(test_y, pred_y)
 
-        min_value = 0
-        max_value = 1
-
-        classifier = KerasClassifier(model=model, clip_values=(min_value, max_value), use_logits=False)
+        # TODO: become ensumble
 
         # check with gea
         # geaデータの用意
@@ -136,7 +132,7 @@ class Classifier:
         # 予測
         pred_y = model.predict(df_gea_x)
 
-        plt.figure(figsize=(100, 100))
+        plt.figure(figsize=(40, 40))
         plot_tree(model, feature_names=df_gea.columns,
                   class_names=True, filled=True)
         plt.savefig(f"{name}_gea_{self.depth}.pdf")
@@ -197,7 +193,7 @@ class Classifier:
         score = model.score(test_x, test_y)
         print(f"score({name}): {score}")
 
-        plt.figure(figsize=(100, 100))
+        plt.figure(figsize=(40, 40))
         plot_tree(model, feature_names=train_x.columns,
                   class_names=True, filled=True)
         plt.savefig(f"{name}_{self.depth}_after.pdf")
@@ -214,7 +210,7 @@ class Classifier:
         # 予測
         pred_y = model.predict(df_gea_x)
 
-        plt.figure(figsize=(15, 10))
+        plt.figure(figsize=(40, 40))
         plot_tree(model, feature_names=df_gea.columns,
                   class_names=True, filled=True)
         plt.savefig(f"{name}_gea_{self.depth}_after.pdf")
