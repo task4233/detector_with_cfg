@@ -13,7 +13,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn import metrics
 from sklearn.model_selection import KFold
 
-import copy
+import joblib
 
 import json
 matplotlib.use('TkAgg')
@@ -88,6 +88,8 @@ class Classifier:
             max_depth=self.depth, random_state=42)
         # model = lightgbm.LGBMRegressor()
         model.fit(train_x, train_y)
+
+        joblib.dump(model, f"decisiontree_{name}.model")
 
         # 予測
         pred_y = model.predict(test_x)
@@ -187,6 +189,8 @@ class Classifier:
             max_depth=self.depth, random_state=1)
         # model = lightgbm.LGBMRegressor()
         model.fit(train_x, train_y)
+
+        joblib.dump(model, f"decisiontree_{name}_gea.model")
 
         # 予測
         pred_y = model.predict(test_x)
